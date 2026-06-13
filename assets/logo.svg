@@ -46,10 +46,13 @@
       <stop offset="65%" stop-color="#0a0a0c"/>
       <stop offset="100%" stop-color="#1d1d22"/>
     </linearGradient>
-    <!-- cork -->
-    <linearGradient id="cork" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5a4322"/>
-      <stop offset="100%" stop-color="#2c1f0e"/>
+    <!-- glossy black stopper -->
+    <linearGradient id="stopper" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="26%" stop-color="#43434a"/>
+      <stop offset="50%" stop-color="#101014"/>
+      <stop offset="78%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#26262c"/>
     </linearGradient>
     <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
@@ -72,16 +75,17 @@
   <ellipse cx="256" cy="452" rx="98" ry="18" fill="#ffce72" opacity="0.22" filter="url(#soft)"/>
 
   <g>
-    <!-- cork top -->
-    <rect x="244" y="74" width="24" height="20" rx="4" fill="url(#cork)" stroke="#1c1305" stroke-width="1"/>
-    <!-- gold foil capsule over the neck -->
-    <path d="M238 92 L274 92 L276 146 Q276 152 270 152 L242 152 Q236 152 236 146 Z"
-          fill="url(#goldV)" stroke="#6f4e10" stroke-width="1"/>
-    <rect x="236" y="142" width="40" height="8" rx="3" fill="url(#gold)" stroke="#6f4e10" stroke-width="0.8"/>
-    <path d="M242 96 L246 150" stroke="#fff3cf" stroke-width="2" stroke-opacity="0.5"/>
+    <!-- glass neck with flared lip -->
+    <path d="M245 190 L247 142 L240 134 L240 127 L272 127 L272 134 L265 142 L267 190 Z"
+          fill="url(#neckg)" stroke="#000" stroke-width="0.6"/>
+    <path d="M251 144 L250 188" stroke="#5b5b64" stroke-width="2" stroke-opacity="0.45"/>
 
-    <!-- neck -->
-    <path d="M243 150 L243 190 L269 190 L269 150 Z" fill="url(#neckg)" stroke="#000" stroke-width="0.5"/>
+    <!-- sleek stopper: black glossy knob + gold collar -->
+    <rect x="239" y="120" width="34" height="11" rx="3.5" fill="url(#gold)" stroke="#6f4e10" stroke-width="1"/>
+    <path d="M245 123 L245 102 Q245 89 256 89 Q267 89 267 102 L267 123 Z"
+          fill="url(#stopper)" stroke="#000" stroke-width="0.8"/>
+    <ellipse cx="252" cy="100" rx="3.5" ry="12" fill="#ffffff" opacity="0.28"/>
+    <ellipse cx="256" cy="92" rx="9" ry="3.5" fill="#ffffff" opacity="0.20"/>
 
     <!-- glass body -->
     <path d="M243 188
