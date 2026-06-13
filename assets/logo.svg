@@ -30,38 +30,36 @@
       <stop offset="50%" stop-color="#d6a23e"/>
       <stop offset="100%" stop-color="#a9781f"/>
     </linearGradient>
-    <!-- realistic round black glass (cylinder shading) -->
-    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#000000"/>
-      <stop offset="12%" stop-color="#15151a"/>
-      <stop offset="30%" stop-color="#3a3a40"/>
-      <stop offset="44%" stop-color="#17171b"/>
-      <stop offset="62%" stop-color="#050506"/>
-      <stop offset="84%" stop-color="#000000"/>
-      <stop offset="100%" stop-color="#26262b"/>
+    <!-- charred-oak wood, cylindrical shading (lit center) -->
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#241405"/>
+      <stop offset="14%" stop-color="#5e3c17"/>
+      <stop offset="32%" stop-color="#bf8a3c"/>
+      <stop offset="50%" stop-color="#935f24"/>
+      <stop offset="68%" stop-color="#5e3c17"/>
+      <stop offset="86%" stop-color="#241405"/>
+      <stop offset="100%" stop-color="#3a2410"/>
     </linearGradient>
-    <linearGradient id="neckg" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#050506"/>
-      <stop offset="35%" stop-color="#34343a"/>
-      <stop offset="65%" stop-color="#0a0a0c"/>
-      <stop offset="100%" stop-color="#1d1d22"/>
-    </linearGradient>
-    <!-- glossy black stopper -->
-    <linearGradient id="stopper" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#000000"/>
-      <stop offset="26%" stop-color="#43434a"/>
-      <stop offset="50%" stop-color="#101014"/>
-      <stop offset="78%" stop-color="#000000"/>
-      <stop offset="100%" stop-color="#26262c"/>
-    </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    <!-- metallic band -->
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5a3f0e"/>
+      <stop offset="22%" stop-color="#e7bd61"/>
+      <stop offset="50%" stop-color="#c79a35"/>
+      <stop offset="78%" stop-color="#e7bd61"/>
+      <stop offset="100%" stop-color="#5a3f0e"/>
     </linearGradient>
     <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="10"/>
     </filter>
+    <!-- organic vertical wood grain -->
+    <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.11" numOctaves="3" seed="11" stitchTiles="stitch"/>
+      <feColorMatrix type="luminanceToAlpha"/>
+      <feComponentTransfer><feFuncA type="gamma" amplitude="1.7" exponent="2.3" offset="-0.12"/></feComponentTransfer>
+    </filter>
+    <clipPath id="barrelClip">
+      <path d="M168 124 C152 168 143 214 143 262 C143 310 152 356 168 400 Q256 416 344 400 C360 356 369 310 369 262 C369 214 360 168 344 124 Q256 108 168 124 Z"/>
+    </clipPath>
   </defs>
 
   <!-- backdrop -->
@@ -70,51 +68,57 @@
   <rect x="18" y="18" width="476" height="476" rx="96" fill="none" stroke="#e7bd61" stroke-width="1" stroke-opacity="0.28"/>
 
   <!-- glow + reflection -->
-  <ellipse cx="256" cy="252" rx="158" ry="196" fill="url(#glow)"/>
-  <ellipse cx="256" cy="238" rx="96" ry="120" fill="url(#core)"/>
-  <ellipse cx="256" cy="452" rx="98" ry="18" fill="#ffce72" opacity="0.22" filter="url(#soft)"/>
+  <ellipse cx="256" cy="256" rx="158" ry="190" fill="url(#glow)"/>
+  <ellipse cx="256" cy="248" rx="96" ry="118" fill="url(#core)"/>
+  <ellipse cx="256" cy="452" rx="104" ry="18" fill="#ffce72" opacity="0.22" filter="url(#soft)"/>
 
-  <g>
-    <!-- glass neck with flared lip -->
-    <path d="M245 190 L247 142 L240 134 L240 127 L272 127 L272 134 L265 142 L267 190 Z"
-          fill="url(#neckg)" stroke="#000" stroke-width="0.6"/>
-    <path d="M251 144 L250 188" stroke="#5b5b64" stroke-width="2" stroke-opacity="0.45"/>
+  <!-- ====== BARREL (clipped) ====== -->
+  <g clip-path="url(#barrelClip)">
+    <!-- wood -->
+    <rect x="138" y="104" width="236" height="312" fill="url(#wood)"/>
+    <!-- prominent grain -->
+    <rect x="138" y="104" width="236" height="312" fill="#140a02" filter="url(#grain)" opacity="0.5"/>
 
-    <!-- sleek stopper: black glossy knob + gold collar -->
-    <rect x="239" y="120" width="34" height="11" rx="3.5" fill="url(#gold)" stroke="#6f4e10" stroke-width="1"/>
-    <path d="M245 123 L245 102 Q245 89 256 89 Q267 89 267 102 L267 123 Z"
-          fill="url(#stopper)" stroke="#000" stroke-width="0.8"/>
-    <ellipse cx="252" cy="100" rx="3.5" ry="12" fill="#ffffff" opacity="0.28"/>
-    <ellipse cx="256" cy="92" rx="9" ry="3.5" fill="#ffffff" opacity="0.20"/>
+    <!-- stave seam lines (black, popping) -->
+    <g stroke="#000000" stroke-width="3.4" fill="none" stroke-opacity="0.92">
+      <path d="M190 118 Q152 262 190 406"/>
+      <path d="M212 118 Q188 262 212 406"/>
+      <path d="M234 118 Q222 262 234 406"/>
+      <path d="M256 116 L256 408"/>
+      <path d="M278 118 Q290 262 278 406"/>
+      <path d="M300 118 Q325 262 300 406"/>
+      <path d="M322 118 Q359 262 322 406"/>
+    </g>
+    <!-- faint stave highlight beside each seam for carved depth -->
+    <g stroke="#d9a955" stroke-width="1" fill="none" stroke-opacity="0.22">
+      <path d="M194 120 Q157 262 194 404"/>
+      <path d="M260 118 L260 406"/>
+      <path d="M304 120 Q330 262 304 404"/>
+    </g>
 
-    <!-- glass body -->
-    <path d="M243 188
-             C243 206 198 214 192 250
-             C186 280 184 296 184 412
-             Q184 448 216 448
-             L296 448
-             Q328 448 328 412
-             C328 296 326 280 320 250
-             C314 214 269 206 269 188 Z"
-          fill="url(#glass)" stroke="url(#gold)" stroke-width="2.5"/>
-
-    <!-- right-edge rim light -->
-    <path d="M318 256 C322 300 322 360 320 432" stroke="#6f6f78" stroke-width="2" stroke-opacity="0.5" fill="none"/>
-
-    <!-- soft specular highlight on the shoulder/body -->
-    <path d="M214 206 C204 244 202 308 205 432 L226 432 C223 308 226 244 234 208 Z"
-          fill="url(#gloss)" opacity="0.85"/>
-    <ellipse cx="224" cy="250" rx="14" ry="34" fill="#ffffff" opacity="0.18" filter="url(#soft)"/>
-
-    <!-- base shadow inside glass -->
-    <path d="M190 426 Q256 446 322 426 L320 432 Q256 452 192 432 Z" fill="#000" opacity="0.55"/>
-
-    <!-- gold label -->
-    <rect x="198" y="300" width="116" height="96" rx="9" fill="url(#gold)" stroke="#6f4e10" stroke-width="1.5"/>
-    <rect x="206" y="308" width="100" height="80" rx="6" fill="none" stroke="#5e4310" stroke-width="1.5" stroke-opacity="0.65"/>
-    <!-- small diamond flourish -->
-    <path d="M256 316 L264 326 L256 336 L248 326 Z" fill="#1a1206"/>
-    <!-- Mc monogram -->
-    <text x="256" y="372" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" fill="#1a1206">Mc</text>
+    <!-- upper band -->
+    <rect x="128" y="172" width="256" height="36" fill="url(#band)"/>
+    <rect x="128" y="180" width="256" height="6" fill="#fbe9a8" opacity="0.45"/>
+    <rect x="128" y="170" width="256" height="5" fill="#000000"/>
+    <rect x="128" y="203" width="256" height="5" fill="#000000"/>
+    <!-- lower band -->
+    <rect x="128" y="318" width="256" height="36" fill="url(#band)"/>
+    <rect x="128" y="326" width="256" height="6" fill="#fbe9a8" opacity="0.45"/>
+    <rect x="128" y="316" width="256" height="5" fill="#000000"/>
+    <rect x="128" y="349" width="256" height="5" fill="#000000"/>
   </g>
+
+  <!-- barrel top rim (head) -->
+  <ellipse cx="256" cy="118" rx="88" ry="15" fill="url(#goldV)" stroke="#000000" stroke-width="2.5"/>
+  <ellipse cx="256" cy="118" rx="76" ry="9.5" fill="#2a1a0b" stroke="#000000" stroke-width="1.2"/>
+  <path d="M188 118 Q256 110 324 118" stroke="#e7bd61" stroke-width="1" stroke-opacity="0.5" fill="none"/>
+
+  <!-- crisp gold outline -->
+  <path d="M168 124 C152 168 143 214 143 262 C143 310 152 356 168 400 Q256 416 344 400 C360 356 369 310 369 262 C369 214 360 168 344 124 Q256 108 168 124 Z"
+        fill="none" stroke="url(#gold)" stroke-width="3.5"/>
+
+  <!-- ====== Mc diamond emblem ====== -->
+  <path d="M256 208 L314 262 L256 316 L198 262 Z" fill="url(#gold)" stroke="#000000" stroke-width="4"/>
+  <path d="M256 220 L302 262 L256 304 L210 262 Z" fill="none" stroke="#5e4310" stroke-width="1.6" stroke-opacity="0.7"/>
+  <text x="256" y="275" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-weight="700" fill="#1a1206">Mc</text>
 </svg>
