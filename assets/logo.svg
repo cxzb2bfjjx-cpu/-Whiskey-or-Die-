@@ -1,20 +1,25 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Whiskey or Die">
   <defs>
-    <!-- slick dark backdrop -->
-    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
-      <stop offset="0%" stop-color="#33271a"/>
-      <stop offset="45%" stop-color="#1b130c"/>
-      <stop offset="100%" stop-color="#070504"/>
+    <!-- near-black backdrop -->
+    <radialGradient id="bg" cx="50%" cy="42%" r="78%">
+      <stop offset="0%" stop-color="#1c1c1d"/>
+      <stop offset="42%" stop-color="#0c0c0d"/>
+      <stop offset="100%" stop-color="#000000"/>
     </radialGradient>
-    <!-- warm gold glow behind the bottle -->
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#e8b25a" stop-opacity="0.55"/>
-      <stop offset="60%" stop-color="#c8902f" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#c8902f" stop-opacity="0"/>
+    <!-- brighter gold glow -->
+    <radialGradient id="glow" cx="50%" cy="49%" r="50%">
+      <stop offset="0%" stop-color="#ffd98a" stop-opacity="0.92"/>
+      <stop offset="34%" stop-color="#f0b24e" stop-opacity="0.5"/>
+      <stop offset="66%" stop-color="#d4901f" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#d4901f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6ad" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#ffe6ad" stop-opacity="0"/>
     </radialGradient>
     <!-- luxe gold -->
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#fbe9a8"/>
+      <stop offset="0%" stop-color="#fdeeb0"/>
       <stop offset="28%" stop-color="#e7bd61"/>
       <stop offset="52%" stop-color="#b67e1d"/>
       <stop offset="74%" stop-color="#e7bd61"/>
@@ -25,61 +30,87 @@
       <stop offset="50%" stop-color="#d6a23e"/>
       <stop offset="100%" stop-color="#a9781f"/>
     </linearGradient>
-    <!-- black glass -->
+    <!-- realistic round black glass (cylinder shading) -->
     <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#000000"/>
-      <stop offset="22%" stop-color="#2c2c2e"/>
-      <stop offset="45%" stop-color="#141414"/>
-      <stop offset="70%" stop-color="#050505"/>
-      <stop offset="100%" stop-color="#1a1a1a"/>
+      <stop offset="12%" stop-color="#15151a"/>
+      <stop offset="30%" stop-color="#3a3a40"/>
+      <stop offset="44%" stop-color="#17171b"/>
+      <stop offset="62%" stop-color="#050506"/>
+      <stop offset="84%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#26262b"/>
     </linearGradient>
-    <!-- glossy specular streak -->
+    <linearGradient id="neckg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#050506"/>
+      <stop offset="35%" stop-color="#34343a"/>
+      <stop offset="65%" stop-color="#0a0a0c"/>
+      <stop offset="100%" stop-color="#1d1d22"/>
+    </linearGradient>
+    <!-- cork -->
+    <linearGradient id="cork" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a4322"/>
+      <stop offset="100%" stop-color="#2c1f0e"/>
+    </linearGradient>
     <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.42"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.5"/>
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
-    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="9"/>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10"/>
     </filter>
   </defs>
 
   <!-- backdrop -->
   <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="url(#gold)" stroke-width="4" stroke-opacity="0.85"/>
-  <rect x="18" y="18" width="476" height="476" rx="96" fill="none" stroke="#e7bd61" stroke-width="1" stroke-opacity="0.25"/>
+  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="url(#gold)" stroke-width="4" stroke-opacity="0.9"/>
+  <rect x="18" y="18" width="476" height="476" rx="96" fill="none" stroke="#e7bd61" stroke-width="1" stroke-opacity="0.28"/>
 
   <!-- glow + reflection -->
-  <ellipse cx="256" cy="250" rx="150" ry="190" fill="url(#glow)"/>
-  <ellipse cx="256" cy="452" rx="92" ry="17" fill="#e7bd61" opacity="0.18" filter="url(#soft)"/>
+  <ellipse cx="256" cy="252" rx="158" ry="196" fill="url(#glow)"/>
+  <ellipse cx="256" cy="238" rx="96" ry="120" fill="url(#core)"/>
+  <ellipse cx="256" cy="452" rx="98" ry="18" fill="#ffce72" opacity="0.22" filter="url(#soft)"/>
 
   <g>
-    <!-- cap -->
-    <rect x="231" y="92" width="50" height="30" rx="6" fill="url(#goldV)" stroke="#6f4e10" stroke-width="1"/>
-    <rect x="226" y="120" width="60" height="30" rx="5" fill="url(#gold)" stroke="#6f4e10" stroke-width="1"/>
+    <!-- cork top -->
+    <rect x="244" y="74" width="24" height="20" rx="4" fill="url(#cork)" stroke="#1c1305" stroke-width="1"/>
+    <!-- gold foil capsule over the neck -->
+    <path d="M238 92 L274 92 L276 146 Q276 152 270 152 L242 152 Q236 152 236 146 Z"
+          fill="url(#goldV)" stroke="#6f4e10" stroke-width="1"/>
+    <rect x="236" y="142" width="40" height="8" rx="3" fill="url(#gold)" stroke="#6f4e10" stroke-width="0.8"/>
+    <path d="M242 96 L246 150" stroke="#fff3cf" stroke-width="2" stroke-opacity="0.5"/>
+
+    <!-- neck -->
+    <path d="M243 150 L243 190 L269 190 L269 150 Z" fill="url(#neckg)" stroke="#000" stroke-width="0.5"/>
 
     <!-- glass body -->
-    <path d="M232 150 L232 198
-             C232 216 198 222 192 252
-             C187 280 185 296 185 410
-             Q185 446 215 446
-             L297 446
-             Q327 446 327 410
-             C327 296 325 280 320 252
-             C314 222 280 216 280 198
-             L280 150 Z"
-          fill="url(#glass)" stroke="url(#gold)" stroke-width="3"/>
+    <path d="M243 188
+             C243 206 198 214 192 250
+             C186 280 184 296 184 412
+             Q184 448 216 448
+             L296 448
+             Q328 448 328 412
+             C328 296 326 280 320 250
+             C314 214 269 206 269 188 Z"
+          fill="url(#glass)" stroke="url(#gold)" stroke-width="2.5"/>
 
-    <!-- glossy highlight streak -->
-    <path d="M213 205 C205 240 203 300 205 430 L228 430 C226 300 228 240 234 206 Z"
-          fill="url(#gloss)" opacity="0.9"/>
+    <!-- right-edge rim light -->
+    <path d="M318 256 C322 300 322 360 320 432" stroke="#6f6f78" stroke-width="2" stroke-opacity="0.5" fill="none"/>
+
+    <!-- soft specular highlight on the shoulder/body -->
+    <path d="M214 206 C204 244 202 308 205 432 L226 432 C223 308 226 244 234 208 Z"
+          fill="url(#gloss)" opacity="0.85"/>
+    <ellipse cx="224" cy="250" rx="14" ry="34" fill="#ffffff" opacity="0.18" filter="url(#soft)"/>
+
+    <!-- base shadow inside glass -->
+    <path d="M190 426 Q256 446 322 426 L320 432 Q256 452 192 432 Z" fill="#000" opacity="0.55"/>
 
     <!-- gold label -->
-    <rect x="196" y="300" width="120" height="92" rx="9" fill="url(#gold)" stroke="#6f4e10" stroke-width="1.5"/>
-    <rect x="204" y="308" width="104" height="76" rx="6" fill="none" stroke="#5e4310" stroke-width="1.5" stroke-opacity="0.6"/>
-    <!-- emblem: diamond + monogram -->
-    <path d="M256 320 L274 344 L256 368 L238 344 Z" fill="#1a1206"/>
-    <path d="M256 328 L268 344 L256 360 L244 344 Z" fill="url(#goldV)"/>
-    <text x="256" y="350" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-weight="700" fill="#1a1206">W</text>
+    <rect x="198" y="300" width="116" height="96" rx="9" fill="url(#gold)" stroke="#6f4e10" stroke-width="1.5"/>
+    <rect x="206" y="308" width="100" height="80" rx="6" fill="none" stroke="#5e4310" stroke-width="1.5" stroke-opacity="0.65"/>
+    <!-- small diamond flourish -->
+    <path d="M256 316 L264 326 L256 336 L248 326 Z" fill="#1a1206"/>
+    <!-- Mc monogram -->
+    <text x="256" y="372" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" fill="#1a1206">Mc</text>
   </g>
 </svg>
