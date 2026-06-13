@@ -32,6 +32,7 @@
       t.classList.add("active");
       $$(".view").forEach(function (v) { v.classList.remove("active"); });
       $("#view-" + t.dataset.tab).classList.add("active");
+      if (t.dataset.tab !== "scan") stopBarcode();
       window.scrollTo(0, 0);
     });
   });
@@ -410,6 +411,181 @@
     el.innerHTML = '<div class="verdict-card verdict-fair">' + esc(msg) + "</div>";
     setTimeout(function () { if (el.firstChild && el.textContent === msg) el.innerHTML = ""; }, 2500);
   }
+
+  /* ===================== SCAN (label OCR + barcode) ===================== */
+  const UPC_KEY = "wod_upcmap_v1";
+  function loadUpcMap() { try { return JSON.parse(localStorage.getItem(UPC_KEY)) || {}; } catch (e) { return {}; } }
+  function saveUpcMap(m) { localStorage.setItem(UPC_KEY, JSON.stringify(m)); }
+
+  // generic label words to ignore when matching OCR text to a bottle
+  const STOP = new Set(("the and for with aged year years old kentucky tennessee straight whiskey whisky " +
+    "bourbon scotch single barrel small batch proof distillery distilled company co reserve label " +
+    "estate vineyards winery tequila vodka gin rum cognac brandy liqueur wine bottled bond non chill " +
+    "filtered cask strength original premium handcrafted product france mexico scotland ireland japan").split(/\s+/));
+
+  function tokenize(s) {
+    return s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+      .filter(function (w) { return w.length >= 2 && !STOP.has(w); });
+  }
+
+  function fuzzyMatch(text, limit) {
+    const t = " " + text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ") + " ";
+    const words = new Set(tokenize(text));
+    const scored = DATA.map(function (b) {
+      const nameTokens = tokenize(b.name + " " + b.brand);
+      let hit = 0;
+      nameTokens.forEach(function (w) { if (words.has(w)) hit++; });
+      let score = hit;
+      if (b.brand && t.indexOf(" " + b.brand.toLowerCase() + " ") !== -1) score += 3; // strong brand signal
+      return { b: b, score: score, frac: hit / Math.max(1, nameTokens.length) };
+    }).filter(function (x) { return x.score > 0; })
+      .sort(function (a, b) { return b.score - a.score || b.frac - a.frac; });
+    return scored.slice(0, limit || 6).map(function (x) { return x.b; });
+  }
+
+  const scanStatus = $("#scan-status");
+  const scanResults = $("#scan-results");
+  function clearScan() { scanStatus.innerHTML = ""; scanResults.innerHTML = ""; }
+  function setStatus(html) { scanStatus.innerHTML = html ? '<div class="scan-progress">' + html + "</div>" : ""; }
+  function setProgress(label, pct) {
+    scanStatus.innerHTML = '<div class="scan-progress">' + esc(label) +
+      '<div class="bar"><div style="width:' + pct + '%"></div></div></div>';
+  }
+
+  function showResults(bottles, ocrText) {
+    scanResults.innerHTML = "";
+    bottles.forEach(function (b) { scanResults.appendChild(bottleCard(b)); });
+    if (ocrText) {
+      const t = document.createElement("div");
+      t.className = "scan-ocr-text";
+      t.textContent = "Read from label: " + ocrText.replace(/\s+/g, " ").trim().slice(0, 120);
+      scanResults.appendChild(t);
+    }
+    scanResults.appendChild(manualSearchBox("Not the right one? Search manually:", function (b) { showResults([b]); }));
+  }
+
+  function manualSearchBox(label, onPick) {
+    const wrap = document.createElement("div");
+    wrap.className = "field"; wrap.style.marginTop = "12px";
+    wrap.innerHTML = "<span>" + esc(label) + '</span><input type="search" placeholder="Type a bottle name…" autocomplete="off"><div class="autocomplete"></div>';
+    const input = wrap.querySelector("input"), dd = wrap.querySelector(".autocomplete");
+    attachAutocomplete(input, dd, function (b) { onPick(b); });
+    return wrap;
+  }
+
+  /* ---- Label photo OCR ---- */
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    return new Promise(function (res, rej) {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      s.onload = function () { window.Tesseract ? res(window.Tesseract) : rej(new Error("no tesseract")); };
+      s.onerror = function () { rej(new Error("load failed")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function handlePhoto(file) {
+    if (!file) return;
+    clearScan();
+    setProgress("Loading the text-reader…", 5);
+    let T;
+    try { T = await loadTesseract(); }
+    catch (e) {
+      setStatus("Couldn't load the on-device text-reader (it needs internet the first time). Search instead:");
+      scanResults.innerHTML = "";
+      scanResults.appendChild(manualSearchBox("Find your bottle:", function (b) { showResults([b]); }));
+      return;
+    }
+    try {
+      const url = URL.createObjectURL(file);
+      const result = await T.recognize(url, "eng", {
+        logger: function (m) { if (m.status === "recognizing text") setProgress("Reading the label…", Math.round(m.progress * 100)); }
+      });
+      URL.revokeObjectURL(url);
+      const text = (result && result.data && result.data.text) || "";
+      const matches = fuzzyMatch(text, 6);
+      if (matches.length) { setStatus("Best matches from the label 👇"); showResults(matches, text); }
+      else {
+        setStatus("Couldn't confidently match that label. Search instead:");
+        scanResults.innerHTML = "";
+        if (text.trim()) { const d = document.createElement("div"); d.className = "scan-ocr-text"; d.textContent = "Read: " + text.replace(/\s+/g, " ").trim().slice(0, 120); scanResults.appendChild(d); }
+        scanResults.appendChild(manualSearchBox("Find your bottle:", function (b) { showResults([b]); }));
+      }
+    } catch (e) {
+      setStatus("Couldn't read that image — try a clearer, well-lit shot of the front label. Or search:");
+      scanResults.innerHTML = "";
+      scanResults.appendChild(manualSearchBox("Find your bottle:", function (b) { showResults([b]); }));
+    }
+  }
+
+  /* ---- Barcode scanning (native BarcodeDetector) ---- */
+  let scanStream = null, scanRAF = null, detector = null;
+
+  async function startBarcode() {
+    clearScan();
+    if (!("BarcodeDetector" in window)) {
+      setStatus("Your browser can't scan barcodes directly (try Chrome on Android, or use Snap-the-label). Search instead:");
+      scanResults.appendChild(manualSearchBox("Find your bottle:", function (b) { showResults([b]); }));
+      return;
+    }
+    try { detector = new window.BarcodeDetector({ formats: ["upc_a", "upc_e", "ean_13", "ean_8", "code_128"] }); }
+    catch (e) { detector = new window.BarcodeDetector(); }
+    try { scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } }); }
+    catch (e) {
+      setStatus("Camera access was blocked. Allow camera in your browser settings, or search instead:");
+      scanResults.appendChild(manualSearchBox("Find your bottle:", function (b) { showResults([b]); }));
+      return;
+    }
+    const cam = $("#scan-camera"), video = $("#scan-video");
+    cam.hidden = false; video.srcObject = scanStream;
+    try { await video.play(); } catch (e) { /* autoplay quirks */ }
+    const tick = async function () {
+      if (!scanStream) return;
+      try {
+        const codes = await detector.detect(video);
+        if (codes && codes.length) { handleUPC(codes[0].rawValue); return; }
+      } catch (e) { /* transient detect errors are fine */ }
+      scanRAF = requestAnimationFrame(tick);
+    };
+    scanRAF = requestAnimationFrame(tick);
+  }
+
+  function stopBarcode() {
+    if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+    if (scanStream) { scanStream.getTracks().forEach(function (t) { t.stop(); }); scanStream = null; }
+    const cam = $("#scan-camera"); if (cam) cam.hidden = true;
+  }
+
+  function handleUPC(code) {
+    stopBarcode();
+    const map = loadUpcMap();
+    if (map[code] && byId[map[code]]) {
+      setStatus("Barcode matched ✓");
+      showResults([byId[map[code]]]);
+    } else {
+      promptLinkUPC(code);
+    }
+  }
+
+  function promptLinkUPC(code) {
+    setStatus("");
+    scanResults.innerHTML = "";
+    const note = document.createElement("div");
+    note.className = "scan-link-prompt";
+    note.innerHTML = "New barcode <b>" + esc(code) + "</b> isn't linked yet. Tap the matching bottle once — I'll remember it next time.";
+    scanResults.appendChild(note);
+    scanResults.appendChild(manualSearchBox("Which bottle is this?", function (b) {
+      const map = loadUpcMap(); map[code] = b.id; saveUpcMap(map);
+      setStatus("Linked ✓ — future scans of this barcode open instantly.");
+      showResults([b]);
+    }));
+  }
+
+  $("#scan-photo-btn").addEventListener("click", function () { $("#scan-photo-input").click(); });
+  $("#scan-photo-input").addEventListener("change", function (e) { handlePhoto(e.target.files && e.target.files[0]); e.target.value = ""; });
+  $("#scan-barcode-btn").addEventListener("click", startBarcode);
+  $("#scan-stop").addEventListener("click", stopBarcode);
 
   /* ===================== BOOT ===================== */
   $("#data-meta").textContent = DATA.length + " bottles across " + presentCats.length + " categories · bourbon & Scotch core · Texas pricing";

@@ -21,9 +21,10 @@
 
   <nav class="tabbar" id="tabbar">
     <button class="tab active" data-tab="browse">🔎 Browse</button>
-    <button class="tab" data-tab="deal">💸 Deal Check</button>
+    <button class="tab" data-tab="scan">📷 Scan</button>
+    <button class="tab" data-tab="deal">💸 Deal</button>
     <button class="tab" data-tab="trade">🤝 Trade</button>
-    <button class="tab" data-tab="log">📓 My Log</button>
+    <button class="tab" data-tab="log">📓 Log</button>
   </nav>
 
   <main id="main">
@@ -57,6 +58,46 @@
       </div>
 
       <div class="bottle-list" id="bottle-list"></div>
+    </section>
+
+    <!-- ===================== SCAN ===================== -->
+    <section class="view" id="view-scan">
+      <div class="panel">
+        <h2>📷 Scan a bottle</h2>
+        <p class="muted">Two ways to ID a bottle without typing: snap the label, or scan the barcode.</p>
+
+        <div class="scan-btns">
+          <button class="scan-big" id="scan-photo-btn">
+            <span class="scan-ic">🏷️</span>
+            <span>Snap the label</span>
+            <small>Reads the text on the bottle</small>
+          </button>
+          <button class="scan-big" id="scan-barcode-btn">
+            <span class="scan-ic">▌▌▌</span>
+            <span>Scan barcode</span>
+            <small>Uses your camera</small>
+          </button>
+        </div>
+        <input type="file" id="scan-photo-input" accept="image/*" capture="environment" hidden />
+
+        <!-- live camera (barcode) -->
+        <div id="scan-camera" class="scan-camera" hidden>
+          <video id="scan-video" playsinline muted></video>
+          <div class="scan-reticle"></div>
+          <button class="btn-ghost scan-stop" id="scan-stop">Stop camera</button>
+          <div class="scan-hint" id="scan-cam-hint">Point at the barcode…</div>
+        </div>
+
+        <div id="scan-status"></div>
+        <div id="scan-results"></div>
+
+        <details class="scan-help">
+          <summary>How does this work?</summary>
+          <p><b>Label:</b> runs on-device text recognition (OCR) on your photo and matches it to the database — no photo ever leaves your phone.</p>
+          <p><b>Barcode:</b> builds a personal library. The first time you scan a bottle it won't know it — tap the right bottle once to link it, and every future scan of that barcode opens instantly.</p>
+          <p>If a feature isn't supported by your browser, you'll get a normal search box instead.</p>
+        </details>
+      </div>
     </section>
 
     <!-- ===================== DEAL CHECK ===================== -->
