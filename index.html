@@ -157,7 +157,17 @@
     <section class="view" id="view-log">
       <div class="panel">
         <h2>📓 My price log</h2>
-        <p class="muted">See a price in a Facebook group, at auction, or on a shelf? Log it. Builds your own running record of real-world market prices — the legal, ban-proof way to track the aftermarket.</p>
+        <p class="muted">See a price in a Facebook group, at auction, or on a shelf? Log it. Builds your own running record of real-world market prices — the legal, ban-proof way to track the aftermarket. Every matched price (discounted from ask to a likely sale price) sharpens the market values across the whole app.</p>
+
+        <div class="import-box">
+          <button class="btn-primary" id="import-photos-btn">📸 Import prices from photos</button>
+          <input type="file" id="import-input" accept="image/*" multiple hidden />
+          <p class="muted" style="margin:10px 0 0">Dump a batch of screenshots from your trading group. I'll read each one, pull the bottle &amp; asking price, estimate the likely <b>sale</b> price (asks run high), and let you review before saving.</p>
+        </div>
+        <div id="import-status"></div>
+        <div id="import-review"></div>
+
+        <h3 class="log-subhead">Add one manually</h3>
         <label class="field">Bottle
           <input type="search" id="log-search" placeholder="Bottle name…" autocomplete="off" />
           <div class="autocomplete" id="log-autocomplete"></div>

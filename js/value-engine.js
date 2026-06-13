@@ -8,7 +8,30 @@
 
   const DATA = window.BOTTLE_DATA || [];
 
+  /* Runtime overlay of observed aftermarket data the user has logged.
+     Shape: { bottleId: [estimatedSalePrice, ...] }. Fed from the price log
+     so the curated numbers get corrected by real group prices over time. */
+  let OBSERVED = {};
+
   /* --- helpers --- */
+  function median(arr) {
+    if (!arr || !arr.length) return null;
+    const a = arr.slice().sort(function (x, y) { return x - y; });
+    const m = Math.floor(a.length / 2);
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  }
+
+  /* Asking prices in trading groups run high — actual sold prices are lower.
+     Tiered haircut: cheap allocated bottles get marked up the most in asks;
+     grails trade closer to ask. */
+  function estimateSaleFromAsk(ask) {
+    if (!ask || ask <= 0) return ask;
+    let f;
+    if (ask < 150) f = 0.78;
+    else if (ask <= 600) f = 0.83;
+    else f = 0.88;
+    return Math.round(ask * f);
+  }
   function mid(low, high, fallback) {
     if (low != null && high != null) return (low + high) / 2;
     if (low != null) return low;
@@ -26,10 +49,10 @@
     return mid(b.secondaryLow, b.secondaryHigh, null);
   }
 
-  /* Market value = what it ACTUALLY costs to acquire.
+  /* Curated market value = what it ACTUALLY costs to acquire, per our data.
      For allocated bottles with a secondary value, MSRP is fiction —
      the real cost is the secondary market. Otherwise it's the shelf. */
-  function marketValue(b) {
+  function curatedValue(b) {
     const sec = secondaryMid(b);
     if (b.allocated && sec != null) {
       return { value: sec, low: b.secondaryLow, high: b.secondaryHigh, basis: "secondary" };
@@ -38,6 +61,28 @@
     return { value: r, low: b.streetLow != null ? b.streetLow : b.msrp,
              high: b.streetHigh != null ? b.streetHigh : b.msrp, basis: "retail" };
   }
+
+  /* Market value, blending the curated number with the user's observed
+     aftermarket data. The more data points logged, the more we trust them. */
+  function marketValue(b) {
+    const base = curatedValue(b);
+    const obs = OBSERVED[b.id];
+    if (obs && obs.length) {
+      const om = median(obs);
+      const n = Math.min(obs.length, 4);
+      const w = n / (n + 2); // 1 pt -> .33, 2 -> .50, 3 -> .60, 4+ -> .67
+      const value = Math.round(om * w + base.value * (1 - w));
+      return {
+        value: value, basis: "observed",
+        low: Math.min(om, base.low != null ? base.low : om),
+        high: Math.max(om, base.high != null ? base.high : om),
+        observedMid: om, observedCount: obs.length, curated: base.value
+      };
+    }
+    return base;
+  }
+
+  function setObserved(map) { OBSERVED = map || {}; buildCategoryStats(); }
 
   /* Quality points per dollar at the bottle's real market price. */
   function qualityPerDollar(b) {
@@ -161,6 +206,10 @@
   window.ValueEngine = {
     init: buildCategoryStats,
     marketValue: marketValue,
+    curatedValue: curatedValue,
+    setObserved: setObserved,
+    estimateSaleFromAsk: estimateSaleFromAsk,
+    median: median,
     secondaryMid: secondaryMid,
     retailMid: retailMid,
     valueScore: valueScore,

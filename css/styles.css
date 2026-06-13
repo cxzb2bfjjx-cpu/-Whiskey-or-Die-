@@ -190,6 +190,23 @@ select { appearance: none; }
 .trade-item .ti-val { color: var(--gold-soft); font-weight: 700; white-space: nowrap; }
 .trade-subtotal { text-align: right; font-weight: 800; color: var(--gold); font-size: 16px; }
 
+/* Import */
+.import-box { background: var(--panel-2); border: 1px dashed var(--gold); border-radius: 12px; padding: 14px; margin: 6px 0 14px; }
+.log-subhead { font-size: 14px; color: var(--gold-soft); margin: 18px 0 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+#import-status { margin-bottom: 10px; }
+#import-review { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.import-row { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; position: relative; }
+.import-row .ir-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.import-row .ir-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--line); flex: none; }
+.import-row .ir-x { color: var(--red); cursor: pointer; font-weight: 800; padding: 0 4px; }
+.import-row .field { margin: 0 0 8px; }
+.import-row .ir-prices { display: flex; gap: 10px; align-items: center; }
+.import-row .ir-prices label { font-size: 11px; color: var(--muted); flex: 1; }
+.import-row .ir-prices input { width: 100%; padding: 8px 10px; }
+.import-row .ir-est { color: var(--gold-soft); font-weight: 800; font-size: 15px; white-space: nowrap; }
+.import-row.ir-unmatched { border-color: var(--orange); }
+.ir-flag { font-size: 11px; color: var(--orange); margin-top: 4px; }
+
 /* Log */
 #log-entries { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
 .log-entry { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; }

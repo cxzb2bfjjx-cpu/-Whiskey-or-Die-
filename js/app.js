@@ -102,7 +102,7 @@
       '<div class="bc-right">' +
         '<div class="vbadge ' + verdict.cls + '">' + verdict.label + "</div>" +
         '<div class="bc-price">' + VE.money(mv.value) +
-          (mv.basis === "secondary" ? ' <small>2nd</small>' : "") +
+          (mv.basis === "secondary" ? ' <small>2nd</small>' : mv.basis === "observed" ? ' <small>est</small>' : "") +
         "</div>" +
         '<div class="qmeter"><span class="qnum" style="color:' + qColor(b.quality) + '">' + b.quality + "</span><span style=\"font-size:10px;color:var(--muted)\">/100</span></div>" +
       "</div>";
@@ -132,7 +132,7 @@
       stat("Quality", '<span style="color:' + qColor(b.quality) + '">' + b.quality + "</span><span style='font-size:12px;color:var(--muted)'>/100</span>"),
       stat("Value score", score + '<span style="font-size:12px;color:var(--muted)">/100</span>'),
       stat("MSRP", VE.money(b.msrp)),
-      stat(mv.basis === "secondary" ? "Secondary value" : "Street price",
+      stat(mv.basis === "secondary" ? "Secondary value" : mv.basis === "observed" ? "Market value (live)" : "Street price",
            VE.money(mv.value) + (mv.low != null && mv.high != null && mv.low !== mv.high
              ? '<div style="font-size:11px;color:var(--muted);font-weight:500">' + VE.money(mv.low) + "–" + VE.money(mv.high) + "</div>" : ""))
     ].join("");
@@ -146,6 +146,13 @@
         (b.secondaryLow != null ? " (" + VE.money(b.secondaryLow) + "–" + VE.money(b.secondaryHigh) + ")" : "") + "." +
         (flip != null && flip > 0 ? " That's <b>" + VE.money(flip) + "</b> over the " + VE.money(b.msrp) + " MSRP — the flip premium if you can land one at retail." : "") +
         "</div>";
+    }
+    if (mv.basis === "observed") {
+      secBlock +=
+        '<div class="m-section-title">Your logged data</div>' +
+        '<div class="m-notes">Blended with <b>' + mv.observedCount + "</b> price" + (mv.observedCount > 1 ? "s" : "") +
+        " you've logged (est. sale median <b>" + VE.money(mv.observedMid) + "</b> vs curated " + VE.money(mv.curated) +
+        ") → working market value <b>" + VE.money(mv.value) + "</b>.</div>";
     }
 
     const m = $("#modal");
@@ -234,7 +241,7 @@
     $("#deal-selected").innerHTML =
       '<div class="deal-selected-card"><b>' + esc(b.name) + "</b> · " + esc(b.category) +
       "<br>MSRP " + VE.money(b.msrp) + " · market " + VE.money(mv.value) +
-      (mv.basis === "secondary" ? " (secondary)" : "") + " · quality " + b.quality + "/100</div>";
+      (mv.basis === "secondary" ? " (secondary)" : mv.basis === "observed" ? " (your data)" : "") + " · quality " + b.quality + "/100</div>";
   }
 
   $("#deal-go").addEventListener("click", runDeal);
@@ -276,7 +283,7 @@
         const row = document.createElement("div");
         row.className = "trade-item";
         row.innerHTML = "<span>" + esc(b.name) + ' <span style="color:var(--muted);font-size:11px">' +
-          (mv.basis === "secondary" ? "2nd" : "retail") + "</span></span>" +
+          (mv.basis === "secondary" ? "2nd" : mv.basis === "observed" ? "your data" : "retail") + "</span></span>" +
           '<span><span class="ti-val">' + VE.money(mv.value) + '</span> <span class="ti-x">×</span></span>';
         row.querySelector(".ti-x").addEventListener("click", function () { removeTradeItem(side, idx); });
         wrap.appendChild(row);
@@ -335,18 +342,37 @@
       id: logBottle ? logBottle.id : null,
       name: logBottle ? logBottle.name : name,
       price: price,
+      est: VE.estimateSaleFromAsk(price),
       source: $("#log-source").value,
       note: $("#log-note").value.trim(),
       ts: Date.now()
     });
     saveLog(log);
     $("#log-price").value = ""; $("#log-note").value = ""; $("#log-search").value = ""; logBottle = null;
-    renderLog();
+    refreshObserved();
   });
 
   $("#log-clear").addEventListener("click", function () {
-    if (confirm("Clear your entire price log? This can't be undone.")) { saveLog([]); renderLog(); }
+    if (confirm("Clear your entire price log? This can't be undone.")) { saveLog([]); refreshObserved(); }
   });
+
+  /* Rebuild the engine's observed-price overlay from every matched log entry,
+     then re-render the views that depend on market value. */
+  function gatherObserved() {
+    const map = {};
+    loadLog().forEach(function (e) {
+      if (e.id && byId[e.id]) {
+        const est = e.est != null ? e.est : VE.estimateSaleFromAsk(e.price);
+        (map[e.id] = map[e.id] || []).push(est);
+      }
+    });
+    return map;
+  }
+  function refreshObserved() {
+    VE.setObserved(gatherObserved());
+    renderList();
+    renderLog();
+  }
 
   $("#log-export").addEventListener("click", function () {
     const log = loadLog();
@@ -366,32 +392,33 @@
     wrap.innerHTML = "";
     if (!log.length) { wrap.innerHTML = '<div class="empty">No prices logged yet. Spotted one in a FB group or at auction? Add it above.</div>'; return; }
 
-    // group stats by bottle
+    // per-bottle stats based on estimated SALE price (what it really trades at)
     const groups = {};
-    log.forEach(function (e) { (groups[e.name] = groups[e.name] || []).push(e.price); });
+    log.forEach(function (e) {
+      const est = e.est != null ? e.est : VE.estimateSaleFromAsk(e.price);
+      (groups[e.name] = groups[e.name] || []).push(est);
+    });
     const statBits = Object.keys(groups).filter(function (k) { return groups[k].length > 1; }).map(function (k) {
       const arr = groups[k];
-      const avg = arr.reduce(function (a, b) { return a + b; }, 0) / arr.length;
-      return "<b>" + esc(k) + "</b>: avg " + VE.money(avg) + " across " + arr.length + " (" + VE.money(Math.min.apply(null, arr)) + "–" + VE.money(Math.max.apply(null, arr)) + ")";
+      const med = VE.median(arr);
+      return "<b>" + esc(k) + "</b>: ~" + VE.money(med) + " est. sale across " + arr.length +
+        " asks (" + VE.money(Math.min.apply(null, arr)) + "–" + VE.money(Math.max.apply(null, arr)) + ")";
     });
-    if (statBits.length) wrap.innerHTML = '<div class="log-stat">' + statBits.join("<br>") + "</div>";
+    if (statBits.length) wrap.innerHTML = '<div class="log-stat">📈 Your market read (estimated sale prices):<br>' + statBits.join("<br>") + "</div>";
 
     log.forEach(function (e, idx) {
       const div = document.createElement("div");
       div.className = "log-entry";
-      let compare = "";
-      if (e.id && byId[e.id]) {
-        const mv = VE.marketValue(byId[e.id]).value;
-        const d = e.price - mv;
-        compare = " · vs market " + (d >= 0 ? "+" : "−") + VE.money(Math.abs(d));
-      }
+      const est = e.est != null ? e.est : VE.estimateSaleFromAsk(e.price);
+      const estTxt = est !== e.price ? ' <span style="color:var(--muted);font-size:11px">→ est. sale ~' + VE.money(est) + "</span>" : "";
       div.innerHTML =
         '<div class="le-top"><span class="le-name">' + esc(e.name) + '</span>' +
-        '<span><span class="le-price">' + VE.money(e.price) + '</span> <span class="le-x" data-idx="' + idx + '">×</span></span></div>' +
-        '<div class="le-meta">' + esc(e.source) + " · " + new Date(e.ts).toLocaleDateString() + compare +
+        '<span><span class="le-price">' + VE.money(e.price) + '</span>' + estTxt + ' <span class="le-x">×</span></span></div>' +
+        '<div class="le-meta">' + esc(e.source) + " · " + new Date(e.ts).toLocaleDateString() +
+        (e.id && byId[e.id] ? " · feeds market value ✓" : " · unmatched (not scoring)") +
         (e.note ? " · " + esc(e.note) : "") + "</div>";
       div.querySelector(".le-x").addEventListener("click", function () {
-        const l = loadLog(); l.splice(idx, 1); saveLog(l); renderLog();
+        const l = loadLog(); l.splice(idx, 1); saveLog(l); refreshObserved();
       });
       wrap.appendChild(div);
     });
@@ -587,8 +614,148 @@
   $("#scan-barcode-btn").addEventListener("click", startBarcode);
   $("#scan-stop").addEventListener("click", stopBarcode);
 
+  /* ===================== BULK PHOTO IMPORT ===================== */
+  const VOLUMES = new Set(["50", "100", "200", "375", "700", "750", "1000", "1750"]);
+
+  /* Pull plausible prices out of OCR'd listing text. Dollar-signed numbers
+     win; otherwise bare numbers minus volumes/proof/age/abv noise. */
+  function parsePrices(text) {
+    const found = [];
+    let m;
+    const re = /\$\s?(\d{1,3}(?:,\d{3})+|\d{2,5})(?:\.\d{2})?/g;
+    while ((m = re.exec(text))) {
+      const n = parseInt(m[1].replace(/,/g, ""), 10);
+      if (n >= 10 && n <= 20000) found.push(n);
+    }
+    if (!found.length) {
+      const t = text.toLowerCase();
+      const re2 = /(\d{1,3}(?:,\d{3})+|\d{2,5})(?:\.\d+)?/g;
+      while ((m = re2.exec(t))) {
+        const n = parseInt(m[1].replace(/,/g, ""), 10);
+        const after = t.slice(m.index + m[0].length, m.index + m[0].length + 6);
+        if (/^\s*(ml|l\b|proof|pf|yr|year|%|°)/.test(after)) continue;
+        if (VOLUMES.has(String(n))) continue;
+        if (n < 20 || n > 20000) continue;
+        found.push(n);
+      }
+    }
+    return found;
+  }
+
+  async function runImport(files) {
+    if (!files || !files.length) return;
+    const statusEl = $("#import-status"), reviewEl = $("#import-review");
+    reviewEl.innerHTML = "";
+    statusEl.innerHTML = '<div class="scan-progress">Loading the text-reader…<div class="bar"><div style="width:5%"></div></div></div>';
+    let T;
+    try { T = await loadTesseract(); }
+    catch (e) { statusEl.innerHTML = '<div class="verdict-card verdict-fair">Couldn\'t load the on-device text-reader (it needs internet the first time). Try again on a connection.</div>'; return; }
+
+    const items = [];
+    for (let i = 0; i < files.length; i++) {
+      statusEl.innerHTML = '<div class="scan-progress">Reading photo ' + (i + 1) + " of " + files.length +
+        '…<div class="bar"><div style="width:' + Math.round((i / files.length) * 100) + '%"></div></div></div>';
+      let text = "";
+      let thumb = "";
+      try {
+        const url = URL.createObjectURL(files[i]);
+        thumb = url;
+        const result = await T.recognize(url, "eng");
+        text = (result && result.data && result.data.text) || "";
+      } catch (e) { /* skip unreadable image */ }
+      const prices = parsePrices(text);
+      const matches = fuzzyMatch(text, 1);
+      items.push({
+        bottle: matches[0] || null,
+        ask: prices.length ? Math.max.apply(null, prices) : null,
+        thumb: thumb,
+        rawName: (matches[0] && matches[0].name) || text.replace(/\s+/g, " ").trim().slice(0, 40)
+      });
+    }
+    statusEl.innerHTML = '<div class="scan-progress">Read ' + files.length + " photo" + (files.length > 1 ? "s" : "") +
+      ". Review below — fix matches and prices, then save.</div>";
+    renderReview(items);
+  }
+
+  function renderReview(items) {
+    const wrap = $("#import-review");
+    wrap.innerHTML = "";
+    if (!items.length) return;
+
+    items.forEach(function (it) {
+      const row = document.createElement("div");
+      row.className = "import-row" + (it.bottle ? "" : " ir-unmatched");
+
+      const top = document.createElement("div");
+      top.className = "ir-top";
+      top.innerHTML = (it.thumb ? '<img class="ir-thumb" src="' + it.thumb + '">' : "") +
+        '<span style="flex:1;font-size:12px;color:var(--muted)">' + (it.bottle ? "Matched" : "No match — pick the bottle") + "</span>" +
+        '<span class="ir-x">×</span>';
+      row.appendChild(top);
+
+      // bottle picker (prefilled)
+      const pick = document.createElement("div");
+      pick.className = "field"; pick.style.marginBottom = "8px";
+      pick.innerHTML = '<input type="search" autocomplete="off" placeholder="Bottle…"><div class="autocomplete"></div>';
+      const pinput = pick.querySelector("input"), pdd = pick.querySelector(".autocomplete");
+      if (it.bottle) pinput.value = it.bottle.name;
+      attachAutocomplete(pinput, pdd, function (b) {
+        it.bottle = b; pinput.value = b.name; row.classList.remove("ir-unmatched");
+        top.querySelector("span").textContent = "Matched";
+      });
+      row.appendChild(pick);
+
+      // price + estimate
+      const prices = document.createElement("div");
+      prices.className = "ir-prices";
+      prices.innerHTML = '<label>Asking price ($)<input type="number" inputmode="decimal" value="' + (it.ask != null ? it.ask : "") + '"></label>' +
+        '<span class="ir-est"></span>';
+      const ainput = prices.querySelector("input"), estEl = prices.querySelector(".ir-est");
+      function updateEst() {
+        const v = parseFloat(ainput.value);
+        it.ask = v > 0 ? v : null;
+        estEl.textContent = it.ask ? "→ ~" + VE.money(VE.estimateSaleFromAsk(it.ask)) : "";
+      }
+      ainput.addEventListener("input", updateEst); updateEst();
+      row.appendChild(prices);
+
+      if (!it.bottle) { const f = document.createElement("div"); f.className = "ir-flag"; f.textContent = "Couldn't auto-match — won't save until you pick a bottle."; row.appendChild(f); }
+
+      top.querySelector(".ir-x").addEventListener("click", function () {
+        const i = items.indexOf(it); if (i > -1) items.splice(i, 1); renderReview(items);
+      });
+      wrap.appendChild(row);
+    });
+
+    const save = document.createElement("button");
+    save.className = "btn-primary"; save.style.marginTop = "4px";
+    save.textContent = "Save matched prices";
+    save.addEventListener("click", function () { saveImport(items); });
+    wrap.appendChild(save);
+  }
+
+  function saveImport(items) {
+    const ready = items.filter(function (it) { return it.bottle && it.ask > 0; });
+    if (!ready.length) { $("#import-status").innerHTML = '<div class="verdict-card verdict-fair">Nothing to save — match at least one bottle with a price.</div>'; return; }
+    const log = loadLog();
+    ready.forEach(function (it) {
+      log.unshift({
+        id: it.bottle.id, name: it.bottle.name, price: it.ask,
+        est: VE.estimateSaleFromAsk(it.ask),
+        source: "FB ask", note: "photo import", ts: Date.now()
+      });
+    });
+    saveLog(log);
+    $("#import-review").innerHTML = "";
+    $("#import-status").innerHTML = '<div class="verdict-card verdict-great">Saved ' + ready.length +
+      " price" + (ready.length > 1 ? "s" : "") + " ✓ — market values updated below.</div>";
+    refreshObserved();
+  }
+
+  $("#import-photos-btn").addEventListener("click", function () { $("#import-input").click(); });
+  $("#import-input").addEventListener("change", function (e) { runImport(Array.prototype.slice.call(e.target.files || [])); e.target.value = ""; });
+
   /* ===================== BOOT ===================== */
   $("#data-meta").textContent = DATA.length + " bottles across " + presentCats.length + " categories · bourbon & Scotch core · Texas pricing";
-  renderList();
-  renderLog();
+  refreshObserved(); // applies any previously-logged prices, then renders browse + log
 })();
