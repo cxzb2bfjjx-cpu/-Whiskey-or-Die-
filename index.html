@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a120b" />
+  <title>Whiskey or Die — Price vs Quality</title>
+  <meta name="description" content="Know instantly whether a bottle is a good deal or a rip-off. Bourbon-focused price-vs-quality scanner + aftermarket trade tools." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">🥃</span>
+      <div>
+        <h1>Whiskey or Die</h1>
+        <p class="tagline">Good deal or getting screwed? Find out in 5 seconds.</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab active" data-tab="browse">🔎 Browse</button>
+    <button class="tab" data-tab="deal">💸 Deal Check</button>
+    <button class="tab" data-tab="trade">🤝 Trade</button>
+    <button class="tab" data-tab="log">📓 My Log</button>
+  </nav>
+
+  <main id="main">
+
+    <!-- ===================== BROWSE ===================== -->
+    <section class="view active" id="view-browse">
+      <div class="search-row">
+        <input type="search" id="search" placeholder="Search 'Buffalo Trace', 'Macallan', 'Tito's'…" autocomplete="off" />
+      </div>
+
+      <div class="filters" id="filters">
+        <div class="chip-row" id="category-chips"></div>
+        <div class="control-row">
+          <label>Sort
+            <select id="sort">
+              <option value="value">Best value first</option>
+              <option value="quality">Highest quality</option>
+              <option value="price-low">Price: low → high</option>
+              <option value="price-high">Price: high → low</option>
+              <option value="name">Name A→Z</option>
+            </select>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="filter-daily" /> Daily drinkers
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="filter-allocated" /> Allocated only
+          </label>
+        </div>
+        <div class="result-count" id="result-count"></div>
+      </div>
+
+      <div class="bottle-list" id="bottle-list"></div>
+    </section>
+
+    <!-- ===================== DEAL CHECK ===================== -->
+    <section class="view" id="view-deal">
+      <div class="panel">
+        <h2>💸 In-store deal checker</h2>
+        <p class="muted">Standing in the aisle? Find the bottle, punch in the shelf price, and get the verdict.</p>
+        <label class="field">Bottle
+          <input type="search" id="deal-search" placeholder="Start typing a bottle name…" autocomplete="off" />
+          <div class="autocomplete" id="deal-autocomplete"></div>
+        </label>
+        <div id="deal-selected"></div>
+        <label class="field">Price on the shelf ($)
+          <input type="number" id="deal-price" inputmode="decimal" placeholder="e.g. 89.99" />
+        </label>
+        <button class="btn-primary" id="deal-go">Rate this price</button>
+        <div id="deal-result"></div>
+      </div>
+    </section>
+
+    <!-- ===================== TRADE ===================== -->
+    <section class="view" id="view-trade">
+      <div class="panel">
+        <h2>🤝 Trade balancer</h2>
+        <p class="muted">Build both sides of a deal — stack multiple bottles on either side. We total the secondary-market value and tell you who's ahead.</p>
+
+        <div class="trade-grid">
+          <div class="trade-side" id="trade-side-them">
+            <h3>They give you</h3>
+            <div class="trade-add">
+              <input type="search" class="trade-search" data-side="them" placeholder="Add a bottle they're offering…" autocomplete="off" />
+              <div class="autocomplete" data-side="them"></div>
+            </div>
+            <div class="trade-items" data-side="them"></div>
+            <div class="trade-subtotal" data-side="them">$0</div>
+          </div>
+
+          <div class="trade-vs">⇄</div>
+
+          <div class="trade-side" id="trade-side-you">
+            <h3>You give them</h3>
+            <div class="trade-add">
+              <input type="search" class="trade-search" data-side="you" placeholder="Add a bottle you're offering…" autocomplete="off" />
+              <div class="autocomplete" data-side="you"></div>
+            </div>
+            <div class="trade-items" data-side="you"></div>
+            <div class="trade-subtotal" data-side="you">$0</div>
+          </div>
+        </div>
+
+        <div id="trade-verdict"></div>
+        <button class="btn-ghost" id="trade-reset">Reset trade</button>
+      </div>
+    </section>
+
+    <!-- ===================== MY LOG ===================== -->
+    <section class="view" id="view-log">
+      <div class="panel">
+        <h2>📓 My price log</h2>
+        <p class="muted">See a price in a Facebook group, at auction, or on a shelf? Log it. Builds your own running record of real-world market prices — the legal, ban-proof way to track the aftermarket.</p>
+        <label class="field">Bottle
+          <input type="search" id="log-search" placeholder="Bottle name…" autocomplete="off" />
+          <div class="autocomplete" id="log-autocomplete"></div>
+        </label>
+        <div class="log-form-row">
+          <label class="field">Price ($)
+            <input type="number" id="log-price" inputmode="decimal" placeholder="e.g. 250" />
+          </label>
+          <label class="field">Source
+            <select id="log-source">
+              <option>FB group</option>
+              <option>Auction (BAXUS/Unicorn)</option>
+              <option>Retail shelf</option>
+              <option>Local pickup</option>
+              <option>Other</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">Note (optional)
+          <input type="text" id="log-note" placeholder="e.g. asking price, sealed, dusty, ISO…" />
+        </label>
+        <button class="btn-primary" id="log-add">Log this price</button>
+        <div class="log-export-row">
+          <button class="btn-ghost" id="log-export">Export CSV</button>
+          <button class="btn-ghost" id="log-clear">Clear all</button>
+        </div>
+        <div id="log-entries"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== DETAIL MODAL ===================== -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <footer class="app-footer">
+    <p id="data-meta"></p>
+    <p class="disclaimer">Prices &amp; scores are curated reference estimates (calibrated to Texas retail, knowledge as of 2025) — always sanity-check against the shelf. This tool does not facilitate sales; secondary alcohol trading is regulated and illegal in some states. Drink responsibly.</p>
+  </footer>
+
+  <!-- Data modules (each pushes into window.BOTTLE_DATA) -->
+  <script src="data/bourbon.js"></script>
+  <script src="data/rye.js"></script>
+  <script src="data/scotch.js"></script>
+  <script src="data/agave.js"></script>
+  <script src="data/rum.js"></script>
+  <script src="data/gin-vodka.js"></script>
+  <script src="data/world-whisky.js"></script>
+  <script src="data/brandy-liqueur.js"></script>
+  <script src="data/wine.js"></script>
+
+  <!-- App logic -->
+  <script src="js/value-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
