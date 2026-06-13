@@ -1,0 +1,109 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Whiskey or Die">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="78%">
+      <stop offset="0%" stop-color="#1c1c1d"/>
+      <stop offset="42%" stop-color="#0c0c0d"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="49%" r="50%">
+      <stop offset="0%" stop-color="#ffd98a" stop-opacity="0.92"/>
+      <stop offset="34%" stop-color="#f0b24e" stop-opacity="0.5"/>
+      <stop offset="66%" stop-color="#d4901f" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#d4901f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6ad" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#ffe6ad" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdeeb0"/>
+      <stop offset="28%" stop-color="#e7bd61"/>
+      <stop offset="52%" stop-color="#b67e1d"/>
+      <stop offset="74%" stop-color="#e7bd61"/>
+      <stop offset="100%" stop-color="#9a6a14"/>
+    </linearGradient>
+    <linearGradient id="goldV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fcefb8"/>
+      <stop offset="50%" stop-color="#d6a23e"/>
+      <stop offset="100%" stop-color="#a9781f"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#241405"/>
+      <stop offset="14%" stop-color="#5e3c17"/>
+      <stop offset="32%" stop-color="#bf8a3c"/>
+      <stop offset="50%" stop-color="#935f24"/>
+      <stop offset="68%" stop-color="#5e3c17"/>
+      <stop offset="86%" stop-color="#241405"/>
+      <stop offset="100%" stop-color="#3a2410"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5a3f0e"/>
+      <stop offset="22%" stop-color="#e7bd61"/>
+      <stop offset="50%" stop-color="#c79a35"/>
+      <stop offset="78%" stop-color="#e7bd61"/>
+      <stop offset="100%" stop-color="#5a3f0e"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.11" numOctaves="3" seed="11" stitchTiles="stitch"/>
+      <feColorMatrix type="luminanceToAlpha"/>
+      <feComponentTransfer><feFuncA type="gamma" amplitude="1.7" exponent="2.3" offset="-0.12"/></feComponentTransfer>
+    </filter>
+    <clipPath id="barrelClip">
+      <path d="M168 124 C152 168 143 214 143 262 C143 310 152 356 168 400 Q256 416 344 400 C360 356 369 310 369 262 C369 214 360 168 344 124 Q256 108 168 124 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- full-bleed background so the OS mask only crops empty padding -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#bg)"/>
+
+  <!-- whole logo scaled into the maskable safe zone (~76%) -->
+  <g transform="translate(256 256) scale(0.76) translate(-256 -256)">
+    <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+    <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="url(#gold)" stroke-width="4" stroke-opacity="0.9"/>
+    <rect x="18" y="18" width="476" height="476" rx="96" fill="none" stroke="#e7bd61" stroke-width="1" stroke-opacity="0.28"/>
+
+    <ellipse cx="256" cy="256" rx="158" ry="190" fill="url(#glow)"/>
+    <ellipse cx="256" cy="248" rx="96" ry="118" fill="url(#core)"/>
+
+    <g clip-path="url(#barrelClip)">
+      <rect x="138" y="104" width="236" height="312" fill="url(#wood)"/>
+      <rect x="138" y="104" width="236" height="312" fill="#140a02" filter="url(#grain)" opacity="0.5"/>
+      <g stroke="#000000" stroke-width="3.4" fill="none" stroke-opacity="0.92">
+        <path d="M190 118 Q152 262 190 406"/>
+        <path d="M212 118 Q188 262 212 406"/>
+        <path d="M234 118 Q222 262 234 406"/>
+        <path d="M256 116 L256 408"/>
+        <path d="M278 118 Q290 262 278 406"/>
+        <path d="M300 118 Q325 262 300 406"/>
+        <path d="M322 118 Q359 262 322 406"/>
+      </g>
+      <g stroke="#d9a955" stroke-width="1" fill="none" stroke-opacity="0.22">
+        <path d="M194 120 Q157 262 194 404"/>
+        <path d="M260 118 L260 406"/>
+        <path d="M304 120 Q330 262 304 404"/>
+      </g>
+      <rect x="128" y="172" width="256" height="36" fill="url(#band)"/>
+      <rect x="128" y="180" width="256" height="6" fill="#fbe9a8" opacity="0.45"/>
+      <rect x="128" y="170" width="256" height="5" fill="#000000"/>
+      <rect x="128" y="203" width="256" height="5" fill="#000000"/>
+      <rect x="128" y="318" width="256" height="36" fill="url(#band)"/>
+      <rect x="128" y="326" width="256" height="6" fill="#fbe9a8" opacity="0.45"/>
+      <rect x="128" y="316" width="256" height="5" fill="#000000"/>
+      <rect x="128" y="349" width="256" height="5" fill="#000000"/>
+    </g>
+
+    <ellipse cx="256" cy="118" rx="88" ry="15" fill="url(#goldV)" stroke="#000000" stroke-width="2.5"/>
+    <ellipse cx="256" cy="118" rx="76" ry="9.5" fill="#2a1a0b" stroke="#000000" stroke-width="1.2"/>
+    <path d="M188 118 Q256 110 324 118" stroke="#e7bd61" stroke-width="1" stroke-opacity="0.5" fill="none"/>
+
+    <path d="M168 124 C152 168 143 214 143 262 C143 310 152 356 168 400 Q256 416 344 400 C360 356 369 310 369 262 C369 214 360 168 344 124 Q256 108 168 124 Z"
+          fill="none" stroke="url(#gold)" stroke-width="3.5"/>
+
+    <path d="M256 208 L314 262 L256 316 L198 262 Z" fill="url(#gold)" stroke="#000000" stroke-width="4"/>
+    <path d="M256 220 L302 262 L256 304 L210 262 Z" fill="none" stroke="#5e4310" stroke-width="1.6" stroke-opacity="0.7"/>
+    <text x="256" y="275" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-weight="700" fill="#1a1206">Mc</text>
+  </g>
+</svg>
